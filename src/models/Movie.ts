@@ -12,8 +12,14 @@ import {
   Association,
   HasManyGetAssociationsMixin,
   CreationOptional,
+  DataTypes,
+  BelongsToManyAddAssociationMixin,
+  BelongsToManyCreateAssociationMixin,
+  BelongsToManyGetAssociationsMixin,
+  BelongsToManyHasAssociationMixin
 } from "sequelize";
 import Role from "./Role";
+import db from "../config/db/connection";
 
 interface MovieAttributes {
   id: number;
@@ -31,7 +37,14 @@ export default class Movie
   public id!: CreationOptional<number>;
   public title!: string;
   public year!: number;
-  public getProjects!: HasManyGetAssociationsMixin<Role>;
+
+  // role asocitaion method
+  public addRole!: BelongsToManyAddAssociationMixin<Role, number>;
+  public createRole!: BelongsToManyCreateAssociationMixin<Role>;
+  public getRole!: BelongsToManyGetAssociationsMixin<Role>;
+  public getRoless!: HasManyGetAssociationsMixin<Role>;
+  public hasRole!: BelongsToManyHasAssociationMixin<Role, number>;
+
   public readonly roles?: Role[];
   public static associations: {
     roles: Association<Movie, Role>;
@@ -39,3 +52,25 @@ export default class Movie
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
+
+Movie.init(
+  {
+    id: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    title: {
+      type: new DataTypes.STRING(128),
+      allowNull: false,
+    },
+    year: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+  },
+  {
+    sequelize: db,
+    tableName: "movies",
+  }
+);

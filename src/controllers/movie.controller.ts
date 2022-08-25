@@ -9,6 +9,7 @@ export const getMovie = async (req: Request, res: Response) => {
       where: {
         id,
       },
+      include: Role,
     });
     if (movie) {
       res.json({ data: movie });
@@ -21,7 +22,9 @@ export const getMovie = async (req: Request, res: Response) => {
   }
 };
 export const getMovies = async (req: Request, res: Response) => {
-  const movie = await Movie.findAll({});
+  const movie = await Movie.findAll({
+    include: Role,
+  });
   if (movie.length > 0) {
     res.json({ data: movie });
   }
@@ -30,9 +33,15 @@ export const getMovies = async (req: Request, res: Response) => {
 export const postMovie = async (req: Request, res: Response) => {
   const { body } = req.body;
   try {
-    const movie = await Movie.create(body, {
-      include: Role,
+    const role = await Role.create({});
+    role.addPersonCasting(body.movie.casting);
+    role.addPersonDirectors(body.movie.directors);
+    role.addPersonProducers(body.movie.producers);
+    const movie = await Movie.create({
+      title: body.title,
+      year: body.year,
     });
+    role.addMovie(movie);
     res.json({ data: movie });
   } catch (error) {
     res.status(500).json({ msg: "Error en la carga de datos", error: error });
